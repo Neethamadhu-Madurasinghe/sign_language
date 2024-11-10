@@ -1,0 +1,1 @@
+Experiment with WLASL dataset with some classes that are also aviable in SSL datasets. About 19 classes and 137 videos
