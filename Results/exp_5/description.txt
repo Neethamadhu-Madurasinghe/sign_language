@@ -1,0 +1,1 @@
+Fine tune a model that was trained on sinhala data set (450 videos and 20 classes) using smaller english dataset (250 videos and 20 classes) - with more layers
