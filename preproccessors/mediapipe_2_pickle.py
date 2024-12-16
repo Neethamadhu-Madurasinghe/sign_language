@@ -9,9 +9,9 @@ from concurrent.futures import ProcessPoolExecutor
 mp_drawing = mp.solutions.drawing_utils
 mp_holistic = mp.solutions.holistic
 
-num_workers = 12 
-video_path = './inputs/'
-output_dir = './all_outputs/output_holistic_pickle'
+num_workers = 8 
+video_path = '../inputs/wlasl2'
+output_dir = '../all_outputs/output_holistic_pickle_wlasl2'
 video_files = []
 
 def read_all_files(path):
