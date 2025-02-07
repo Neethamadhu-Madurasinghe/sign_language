@@ -10,9 +10,9 @@ from multiprocessing import Manager
 mp_drawing = mp.solutions.drawing_utils
 mp_holistic = mp.solutions.holistic
 
-num_workers = 8 
-video_path = './inputs/ssl'
-output_dir = './all_outputs/output_holistic_pickle_ssl'
+num_workers = 4
+video_path = '../inputs/ssl'
+output_dir = '../all_outputs/output_holistic_pickle_ssl_full'
 video_files = []
 
 # Use a Manager dictionary and Lock to share output_names safely

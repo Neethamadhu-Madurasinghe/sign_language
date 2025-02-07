@@ -1,0 +1,1 @@
+64 class ssl data set trained on the model used in model_2 notebook
