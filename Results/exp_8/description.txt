@@ -1,0 +1,7 @@
+
+173 class INCLUDE dataset trained on a transfomer network. used multiple techniques to improve accuracy. 
+model is taken from INCLUDE dataset's model - From model_6.ipynb - 
+F1 Score: 0.6737393959419921
+Precision: 0.720729138955396
+Recall: 0.6927374301675978
+Accuracy: 0.6927374301675978
