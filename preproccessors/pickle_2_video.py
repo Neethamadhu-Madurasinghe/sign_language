@@ -10,7 +10,8 @@ mp_drawing_styles = mp.solutions.drawing_styles
 mp_holistic = mp.solutions.holistic
 
 # Path to the pickle file
-pickle_file_path = '../all_outputs/output_include/Adjectives/bad'  
+# pickle_file_path = '../all_outputs/output_include/Adjectives/bad'  
+pickle_file_path = '../all_outputs/output_ssl_small/w003'  
 output_dir = '../all_outputs/output_holistic'
 
 pickle_files = []
