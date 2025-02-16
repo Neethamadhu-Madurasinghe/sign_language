@@ -1,0 +1,7 @@
+
+48 class SSL dataset, each class having average 4 training samples and 8 test samples. model is completely trained on this dataset and model uses same parameters
+as model_8 book's one (which uses pre-trained model) 
+F1 Score: 0.3733736162419746
+Precision: 0.44265420739144473
+Recall: 0.3941798941798942
+Accuracy: 0.3941798941798942
