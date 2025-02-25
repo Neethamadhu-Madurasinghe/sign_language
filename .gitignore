@@ -3,3 +3,5 @@
 *.jpg 
 *.pkl
 *.h5
+*/preproccessors/*.png
+preproccessors/plots/*.png

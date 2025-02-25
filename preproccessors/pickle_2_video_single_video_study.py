@@ -11,7 +11,7 @@ mp_holistic = mp.solutions.holistic
 
 # Path to the pickle file
 # pickle_file_path = '../all_outputs/output_include/Adjectives/bad'  
-pickle_file_path = '../all_outputs/output_ssl_small/w022'  
+pickle_file_path = '../all_outputs/output_ssl_small/w048'  
 output_dir = '../all_outputs/output_holistic'
 
 pickle_files = []
