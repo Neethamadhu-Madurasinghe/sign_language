@@ -6,6 +6,10 @@ import matplotlib.pyplot as plt
 with open("left_hand_landmarks.json", "r") as f:
     left_hand_landmarks = json.load(f)[0]  # Assuming first hand in list
 
+# Load pose landmarks
+with open("pose_landmarks.json", "r") as f:
+    pose_landmarks = json.load(f)[0]  # Assuming first pose in list
+
 # Mirror left hand landmarks to create right hand
 right_hand_landmarks = []
 for point in left_hand_landmarks:
@@ -17,13 +21,14 @@ for point in left_hand_landmarks:
     }
     right_hand_landmarks.append(mirrored_point)
 
-# Define pose skeleton manually (dummy data, replace with actual pose landmarks)
-pose_landmarks = [
-    {"id": i, "x": np.random.rand(), "y": np.random.rand(), "z": 0} for i in range(33)
+# Define full-body pose skeleton connections (MediaPipe Pose model)
+pose_connections = [
+    (11, 12), (11, 23), (12, 24), (23, 24),  # Torso
+    (11, 13), (13, 15), (12, 14), (14, 16),  # Arms
+    (15, 17), (17, 19), (19, 21), (16, 18), (18, 20), (20, 22),  # Hands
+    (23, 25), (25, 27), (27, 29), (29, 31),  # Left leg
+    (24, 26), (26, 28), (28, 30), (30, 32)   # Right leg
 ]
-
-# Define skeleton connections (MediaPipe Pose)
-pose_connections = [(16, 18), (18, 20), (20, 22), (15, 17), (17, 19), (19, 21), (15, 30), (30, 32)]
 hand_connections = [(0, 1), (1, 2), (2, 3), (3, 4), (0, 5), (5, 6), (6, 7), (7, 8),
                      (5, 9), (9, 10), (10, 11), (11, 12), (9, 13), (13, 14), (14, 15), (15, 16),
                      (13, 17), (17, 18), (18, 19), (19, 20)]
