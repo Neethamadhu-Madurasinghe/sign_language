@@ -1,0 +1,15 @@
+
+64 class SSL dataset, each class having average 6 training and many for vali/testing. This uses 61 landmarks found through the experiments
+Average results after 3 runs  130 Epoch without early stopping.  0.45 mins each training time 
+
+pose_indices_1 = [0, 2, 5, 7, 8, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
+hand_indices_1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+
+Average F1 Score: 0.5344
+Average Precision: 0.6062
+Average Recall: 0.5398
+Average Accuracy: 0.5398
+
+
+Average number of instance per class in traning set
+5.890625

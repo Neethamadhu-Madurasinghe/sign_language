@@ -6,3 +6,6 @@ F1 Score: 0.4436987072674116
 Precision: 0.5569840195423762
 Recall: 0.46296296296296297
 Accuracy: 0.46296296296296297
+
+Average number of instance per class in traning set
+14.71875

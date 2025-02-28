@@ -9,3 +9,7 @@ Average F1 Score: 0.8156
 Average Precision: 0.8410
 Average Recall: 0.8199
 Average Accuracy: 0.8199 ​
+
+
+Average number of instance per class in traning set
+14.71875
