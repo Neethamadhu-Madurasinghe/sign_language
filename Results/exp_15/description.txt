@@ -1,8 +1,11 @@
 
+
 173 class INCLUDE dataset trained on a transfomer network. used multiple techniques to improve accuracy. 
 model is taken from INCLUDE dataset's model - From model_6.ipynb - 
 Then this model is fine tuned using SSL dataset with 48 classes - each class having average 4 training samples and 8 test samples 27 points  - please takes plots from the notebook
 
+
+SAME AS EXP 10
 
 F1 Score: 0.4017401401806427
 Precision: 0.4315406825066391
@@ -27,3 +30,4 @@ Average Accuracy: 0.4453 ​
 
 Average number of instance per class in traning set
 14.71875
+

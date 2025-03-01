@@ -13,3 +13,19 @@ Average Accuracy: 0.5398
 
 Average number of instance per class in traning set
 5.890625
+
+
+F1 Score of Model 2: 0.5365525580611875
+Precision of Model 2: 0.6080700622930979
+Recall of Model 2: 0.5490716180371353
+Accuracy of Model 2: 0.5490716180371353
+
+F1 Score of Model 2: 0.5256056611721216
+Precision of Model 2: 0.59886337372277
+Recall of Model 2: 0.5305039787798409
+Accuracy of Model 2: 0.5305039787798409
+
+F1 Score of Model 2: 0.541070974301784
+Precision of Model 2: 0.6117605605244083
+Recall of Model 2: 0.5397877984084881
+Accuracy of Model 2: 0.5397877984084881

@@ -9,3 +9,20 @@ Average F1 Score: 0.8026
 Average Precision: 0.8347
 Average Recall: 0.8079
 Average Accuracy: 0.8079 ​​
+
+
+
+F1 Score of Model 2: 0.7957275166793494
+Precision of Model 2: 0.8319348142441364
+Recall of Model 2: 0.798728813559322
+Accuracy of Model 2: 0.798728813559322
+
+F1 Score of Model 2: 0.8196353151925044
+Precision of Model 2: 0.8507529904666622
+Recall of Model 2: 0.826271186440678
+Accuracy of Model 2: 0.826271186440678
+
+F1 Score of Model 2: 0.7924426730293169
+Precision of Model 2: 0.8213172891138993
+Recall of Model 2: 0.798728813559322
+Accuracy of Model 2: 0.798728813559322
