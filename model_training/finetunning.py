@@ -122,8 +122,11 @@ fine_tune_video_data, fine_tune_labels = load_landmarks(ft_file_names, num_frame
 # `video_data` has shape (number of videos, num_frames, number of points*2) where points*2 is the flattened landmark count
 # `labels` contains the labels for each video
 
-CUSTOM_NUM_CLASSES = 242
+CUSTOM_NUM_CLASSES = 80
 NUM_CLASSES = len(set(fine_tune_labels))
+
+# model_path = '../saved_models/book_8/pretrained_model_weights.h5'
+model_path = '../saved_models/book_8/pretrained_model_weights_80_classes.h5'
 
 
 label_encoder = LabelEncoder()
@@ -227,8 +230,7 @@ early_stopping = EarlyStopping(
 num_features = X_ft_train.shape[2]
 print("Num features: ", num_features)
 
-# model_path = '../saved_models/book_8/pretrained_model_weights.h5'
-model_path = '../saved_models/book_8/pretrained_model_weights_242_classes.h5'
+
 
 
 # Configuration for the new dataset
@@ -317,3 +319,39 @@ print("F1 Score:", f1)
 print("Precision:", precision)
 print("Recall:", recall)
 print("Accuracy:", accuracy)
+
+
+# Plot acuracy chart and prompt whether to save it
+# plt.plot(fine_tuned_history.history['accuracy'])
+# plt.plot(fine_tuned_history.history['val_accuracy'])
+# plt.title('Model Accuracy')
+# plt.ylabel('Accuracy')
+# plt.xlabel('Epoch')
+# plt.legend(['Train', 'Validation'], loc='upper left')
+# plt.show()
+
+
+save = input("Do you want to save the Plot? (y/n): ")
+if save.lower() == 'y': 
+    result_dir = '../Results/script_results/'
+    if not os.path.exists(result_dir):
+        os.makedirs(result_dir)
+
+    plot_name = input("Plot name ?: ")
+    plt.plot(fine_tuned_history.history['accuracy'])
+    plt.plot(fine_tuned_history.history['val_accuracy'])
+    plt.ylim(0, 1)
+    plt.title('Model Accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Validation'], loc='upper left')
+    plt.savefig(result_dir +  plot_name + '.png')     
+
+
+
+
+
+save = input("Do you want to save the model? (y/n): ")
+if save.lower() == 'y': 
+    model_name = input("Model name ?: ")
+    fine_tuned_model.save('../saved_models/finetunning_script/' + model_name + '.h5')
