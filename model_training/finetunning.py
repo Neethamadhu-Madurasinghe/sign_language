@@ -122,11 +122,11 @@ fine_tune_video_data, fine_tune_labels = load_landmarks(ft_file_names, num_frame
 # `video_data` has shape (number of videos, num_frames, number of points*2) where points*2 is the flattened landmark count
 # `labels` contains the labels for each video
 
-CUSTOM_NUM_CLASSES = 80
+CUSTOM_NUM_CLASSES = 240
 NUM_CLASSES = len(set(fine_tune_labels))
 
 # model_path = '../saved_models/book_8/pretrained_model_weights.h5'
-model_path = '../saved_models/book_8/pretrained_model_weights_80_classes.h5'
+model_path = '../saved_models/book_8/pretrained_model_weights_240_classes.h5'
 # model_path = '../saved_models/book_8/pretrained_model_weights_80_with_overlapping_classes.h5'
 
 

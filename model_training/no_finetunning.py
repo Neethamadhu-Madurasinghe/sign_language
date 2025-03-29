@@ -147,7 +147,7 @@ labels_encoded = label_encoder.fit_transform(labels_filtered)
 labels_one_hot = to_categorical(labels_encoded, num_classes=len(top_classes))
 
 # Split dataset into training, validation, and test sets
-X_train, X_temp, y_train, y_temp = train_test_split(video_data_filtered, labels_one_hot, test_size=0.8, random_state=42)
+X_train, X_temp, y_train, y_temp = train_test_split(video_data_filtered, labels_one_hot, test_size=0.78, random_state=42)
 X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
 
 # Print train, val, test shapes
