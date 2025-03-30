@@ -20,8 +20,10 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.optimizers import Adam
 from keras.utils import plot_model
 from collections import Counter
+import numpy as np
+from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
+from sklearn.utils.class_weight import compute_class_weight
 
-import tensorflow as tf
 from tensorflow.keras import layers, Model, regularizers
 from tensorflow.keras.callbacks import EarlyStopping
 
@@ -38,6 +40,7 @@ print(len(file_names))
 
 
 all_data = []
+N_RUNS = 3
 
 pose_indices = [0, 15, 16, 17, 18, 19, 20]
 hand_indices = [0, 4, 7, 8, 11, 12, 15, 16, 19, 20]
@@ -127,16 +130,18 @@ video_data, labels = load_landmarks(file_names, num_frames, 3)
 NUM_CLASSES = len(set(labels))
 
 
-CUSTOM_NUM_CLASSES = NUM_CLASSES
 
+# Set the number of instances per class in the training set
+INSTANCES_PER_CLASS = 6  # Change this as needed (e.g., 2, 3, 4, etc.)
+CUSTOM_NUM_CLASSES = NUM_CLASSES  # Assuming NUM_CLASSES is defined elsewhere
 
 # Count the occurrences of each class
 class_counts = Counter(labels)
 
-# Sort classes by their counts in descending order and select the top 120 classes
+# Sort classes by their counts in descending order and select the top NUM_CLASSES classes
 top_classes = [cls for cls, count in class_counts.most_common(CUSTOM_NUM_CLASSES)]
 
-# Filter the dataset to keep only the samples belonging to the top 120 classes
+# Filter the dataset to keep only the samples belonging to the top classes
 filtered_indices = [i for i, label in enumerate(labels) if label in top_classes]
 video_data_filtered = video_data[filtered_indices]
 labels_filtered = labels[filtered_indices]
@@ -144,21 +149,47 @@ labels_filtered = labels[filtered_indices]
 # Encode labels after filtering
 label_encoder = LabelEncoder()
 labels_encoded = label_encoder.fit_transform(labels_filtered)
-labels_one_hot = to_categorical(labels_encoded, num_classes=len(top_classes))
 
-# Split dataset into training, validation, and test sets
-X_train, X_temp, y_train, y_temp = train_test_split(video_data_filtered, labels_one_hot, test_size=0.78, random_state=42)
-X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
+# Custom split to ensure fixed instances per class in training set
+train_indices = []
+val_test_indices = []
+
+for cls in range(len(top_classes)):
+    # Get indices of samples for this class
+    cls_indices = np.where(labels_encoded == cls)[0]
+    np.random.shuffle(cls_indices)  # Randomize the order
+    # Ensure there are enough samples for the class
+    if len(cls_indices) < INSTANCES_PER_CLASS:
+        raise ValueError(f"Class {cls} has only {len(cls_indices)} instances, but {INSTANCES_PER_CLASS} are required.")
+    # Take fixed number of instances for training
+    train_indices.extend(cls_indices[:INSTANCES_PER_CLASS])
+    # Remaining instances go to validation/test
+    val_test_indices.extend(cls_indices[INSTANCES_PER_CLASS:])
+
+# Convert to numpy arrays
+X_train = video_data_filtered[train_indices]
+y_train = labels_encoded[train_indices]
+X_temp = video_data_filtered[val_test_indices]
+y_temp = labels_encoded[val_test_indices]
+
+# One-hot encode labels
+y_train = to_categorical(y_train, num_classes=len(top_classes))
+y_temp = to_categorical(y_temp, num_classes=len(top_classes))
+
+# Split remaining data into validation and test sets
+X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, shuffle=True, random_state=42)
 
 # Print train, val, test shapes
-print(X_train.shape, y_train.shape)
-print(X_val.shape, y_val.shape)
-print(X_test.shape, y_test.shape)
+print("Train shapes:", X_train.shape, y_train.shape)
+print("Validation shapes:", X_val.shape, y_val.shape)
+print("Test shapes:", X_test.shape, y_test.shape)
 
-# Print average number of instance per class in traning set
-class_counts = Counter(y_train.argmax(axis=1))
-print("Average number of instance per class in traning set")
-print(sum(class_counts.values()) / len(class_counts))
+# Verify and print number of instances per class in training set
+y_train_indices = np.argmax(y_train, axis=1)
+class_counts_train = Counter(y_train_indices)
+print("Number of instances per class in training set:")
+print(f"Total unique classes: {len(class_counts_train)}")
+print(f"Average instances per class: {sum(class_counts_train.values()) / len(class_counts_train):.2f}")
 
 NUM_CLASSES = CUSTOM_NUM_CLASSES
 
@@ -252,75 +283,124 @@ num_features = X_train_augmented.shape[2]
 print("Num features: ", num_features)
 
 
-class Config:
-    input_size = num_features
-    hidden_size = 128
-    num_hidden_layers = 4
-    num_attention_heads = 8
-    max_position_embeddings = 30  # Maximum number of frames
-    num_classes = NUM_CLASSES  # Number of output classes
-
-config = Config()
-
-# Build the model
-model = Transformer(config, n_classes=config.num_classes)
-
-# Print the model summary
-model.build(input_shape=(None, config.max_position_embeddings, config.input_size))
-# model.summary()
 
 
-# Convert one-hot encoded labels to class indices
-y_train_indices = np.argmax(y_train, axis=1)
-y_val_indices = np.argmax(y_val, axis=1)
-y_test_indices = np.argmax(y_test, axis=1)
+# Assuming Transformer, num_features, X_train_augmented, y_train, X_val, y_val, X_test, y_test, early_stopping, and NUM_CLASSES are defined elsewhere
 
-# Calculate class weights
-from sklearn.utils.class_weight import compute_class_weight
+def create_train_evaluate_model():
+    class Config:
+        input_size = num_features
+        hidden_size = 128
+        num_hidden_layers = 4
+        num_attention_heads = 8
+        max_position_embeddings = 30  # Maximum number of frames
+        num_classes = NUM_CLASSES  # Number of output classes
 
-class_weights = compute_class_weight(
-    class_weight='balanced',
-    classes=np.unique(y_train_indices),  # Unique class indices
-    y=y_train_indices                     # Class indices for training data
-)
-class_weights = dict(enumerate(class_weights))  # Convert to dictionary
+    config = Config()
 
-# Compile the model
-model.compile(
-    optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
-    loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True, label_smoothing=0.1),
-    metrics=['accuracy']
-)
+    # Build the model
+    model = Transformer(config, n_classes=config.num_classes)
 
-# Train the model with class weights
-history = model.fit(
-    X_train_augmented, 
-    y_train, 
-    validation_data=(X_val, y_val), 
-    epochs=250, 
-    batch_size=32, 
-    callbacks=[early_stopping],
-    class_weight=class_weights
-)
+    # Print the model summary
+    model.build(input_shape=(None, config.max_position_embeddings, config.input_size))
+    # model.summary()
 
-# Evaluate on the test set
-test_loss, test_accuracy = model.evaluate(X_test, y_test)
-print(f"Test Accuracy: {test_accuracy:.4f}")
+    # Convert one-hot encoded labels to class indices
+    y_train_indices = np.argmax(y_train, axis=1)
+    y_val_indices = np.argmax(y_val, axis=1)
+    y_test_indices = np.argmax(y_test, axis=1)
+
+    # Calculate class weights
+    class_weights = compute_class_weight(
+        class_weight='balanced',
+        classes=np.unique(y_train_indices),  # Unique class indices
+        y=y_train_indices                    # Class indices for training data
+    )
+    class_weights = dict(enumerate(class_weights))  # Convert to dictionary
+
+    # Compile the model
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
+        loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True, label_smoothing=0.1),
+        metrics=['accuracy']
+    )
+
+    # Train the model with class weights
+    history = model.fit(
+        X_train_augmented, 
+        y_train, 
+        validation_data=(X_val, y_val), 
+        epochs=250, 
+        batch_size=32, 
+        callbacks=[early_stopping],
+        class_weight=class_weights
+    )
+
+    # Evaluate on the test set
+    test_loss, test_accuracy = model.evaluate(X_test, y_test)
+    print(f"Test Accuracy: {test_accuracy:.4f}")
+
+    # Calculate F1 score and other parameters
+    y_pred = model.predict(X_test)
+    y_pred_classes = np.argmax(y_pred, axis=1)
+
+    # Calculate metrics
+    f1 = f1_score(y_test.argmax(axis=1), y_pred_classes, average='weighted')
+    precision = precision_score(y_test.argmax(axis=1), y_pred_classes, average='weighted')
+    recall = recall_score(y_test.argmax(axis=1), y_pred_classes, average='weighted')
+    accuracy = accuracy_score(y_test.argmax(axis=1), y_pred_classes)
+
+    print("F1 Score:", f1)
+    print("Precision:", precision)
+    print("Recall:", recall)
+    print("Accuracy:", accuracy)
+
+    # Return metrics for aggregation
+    return {
+        'test_accuracy': test_accuracy,
+        'f1': f1,
+        'precision': precision,
+        'recall': recall,
+        'accuracy': accuracy
+    }
 
 
 
-# Calculate F1 score and other parameters
-y_pred = model.predict(X_test)
-y_pred_classes = np.argmax(y_pred, axis=1)
+# List to store metrics from each run
+metrics_list = []
 
+# Run the function N times
+for run in range(N_RUNS):
+    print(f"\nRun {run + 1}/{N_RUNS}:")
+    print("-" * 50)
+    metrics = create_train_evaluate_model()
+    metrics_list.append(metrics)
 
-# Calculate F1 score and other parameters
-f1 = f1_score(y_test.argmax(axis=1), y_pred_classes, average='weighted')
-precision = precision_score(y_test.argmax(axis=1), y_pred_classes, average='weighted')
-recall = recall_score(y_test.argmax(axis=1), y_pred_classes, average='weighted')
-accuracy = accuracy_score(y_test.argmax(axis=1), y_pred_classes)
+# Calculate and print average metrics
+print("\nSummary of All Runs:")
+print("=" * 50)
 
-print("F1 Score:", f1)
-print("Precision:", precision)
-print("Recall:", recall)
-print("Accuracy:", accuracy)
+# Extract individual metrics into arrays
+test_accuracies = [m['test_accuracy'] for m in metrics_list]
+f1_scores = [m['f1'] for m in metrics_list]
+precisions = [m['precision'] for m in metrics_list]
+recalls = [m['recall'] for m in metrics_list]
+accuracies = [m['accuracy'] for m in metrics_list]
+
+# Print individual run results
+for i, metrics in enumerate(metrics_list):
+    print(f"Run {i + 1}:")
+    print(f"  Test Accuracy: {metrics['test_accuracy']:.4f}")
+    print(f"  F1 Score: {metrics['f1']:.4f}")
+    print(f"  Precision: {metrics['precision']:.4f}")
+    print(f"  Recall: {metrics['recall']:.4f}")
+    print(f"  Accuracy: {metrics['accuracy']:.4f}")
+    print()
+
+# Print average results
+print("Average Metrics Across All Runs:")
+print(f"  Average Test Accuracy: {np.mean(test_accuracies):.4f} (±{np.std(test_accuracies):.4f})")
+print(f"  Average F1 Score: {np.mean(f1_scores):.4f} (±{np.std(f1_scores):.4f})")
+print(f"  Average Precision: {np.mean(precisions):.4f} (±{np.std(precisions):.4f})")
+print(f"  Average Recall: {np.mean(recalls):.4f} (±{np.std(recalls):.4f})")
+print(f"  Average Accuracy: {np.mean(accuracies):.4f} (±{np.std(accuracies):.4f})")

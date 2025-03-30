@@ -124,29 +124,55 @@ fine_tune_video_data, fine_tune_labels = load_landmarks(ft_file_names, num_frame
 
 CUSTOM_NUM_CLASSES = 240
 NUM_CLASSES = len(set(fine_tune_labels))
+INSTANCES_PER_CLASS = 6
+N_RUNS = 3 
+
 
 # model_path = '../saved_models/book_8/pretrained_model_weights.h5'
 model_path = '../saved_models/book_8/pretrained_model_weights_240_classes.h5'
 # model_path = '../saved_models/book_8/pretrained_model_weights_80_with_overlapping_classes.h5'
 
-
 label_encoder = LabelEncoder()
 labels_encoded = label_encoder.fit_transform(fine_tune_labels)
 labels_one_hot = to_categorical(labels_encoded, num_classes=NUM_CLASSES)
 
-# Split dataset into training, validation, and test sets
-X_ft_train, X_temp, y_ft_train, y_temp = train_test_split(fine_tune_video_data, labels_one_hot, test_size=0.8, random_state=42)
+# Set the number of instances per class in the training set
+
+
+# Custom split to ensure fixed instances per class in training set
+train_indices = []
+val_test_indices = []
+
+for cls in range(NUM_CLASSES):
+    # Get indices of samples for this class
+    cls_indices = np.where(labels_encoded == cls)[0]
+    np.random.shuffle(cls_indices)  # Randomize the order
+    # Ensure there are enough samples for the class
+    if len(cls_indices) < INSTANCES_PER_CLASS:
+        raise ValueError(f"Class {cls} has only {len(cls_indices)} instances, but {INSTANCES_PER_CLASS} are required.")
+    # Take fixed number of instances for training
+    train_indices.extend(cls_indices[:INSTANCES_PER_CLASS])
+    # Remaining instances go to validation/test
+    val_test_indices.extend(cls_indices[INSTANCES_PER_CLASS:])
+
+# Convert to numpy arrays
+X_ft_train = fine_tune_video_data[train_indices]
+y_ft_train = labels_one_hot[train_indices]
+X_temp = fine_tune_video_data[val_test_indices]
+y_temp = labels_one_hot[val_test_indices]
+
+# Split remaining data into validation and test sets
 X_ft_val, X_ft_test, y_ft_val, y_ft_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
 
-# print train, val, test shapes
+# Print train, val, test shapes
 print(X_ft_train.shape, y_ft_train.shape)
 print(X_ft_val.shape, y_ft_val.shape)
 print(X_ft_test.shape, y_ft_test.shape)
-print("Num Classes:" , NUM_CLASSES)
+print("Num Classes:", NUM_CLASSES)
 
-# Print average number of instance per class in traning set
+# Print average number of instances per class in training set
 class_counts = Counter(y_ft_train.argmax(axis=1))
-print("Average number of instance per class in traning set")
+print("Average number of instances per class in training set")
 print(sum(class_counts.values()) / len(class_counts))
 
 NUM_CLASSES = CUSTOM_NUM_CLASSES
@@ -231,95 +257,141 @@ early_stopping = EarlyStopping(
 num_features = X_ft_train.shape[2]
 print("Num features: ", num_features)
 
+def augment_data(x):
+    # Add random noise to the input
+    noise = tf.random.normal(shape=tf.shape(x), mean=0.0, stddev=0.01)
+    return x + noise
+
+# Apply augmentation during training
+X_train_augmented = augment_data(X_ft_train)
 
 
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras import layers, regularizers
+from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
 
-# Configuration for the new dataset
-class NewConfig:
-    input_size = num_features
-    hidden_size = 128
-    num_hidden_layers = 4
-    num_attention_heads = 8
-    max_position_embeddings = 30
-    num_classes = NUM_CLASSES  # Number of classes in the new dataset
+# Assuming Transformer, num_features, X_train_augmented, X_ft_train, y_ft_train, X_ft_val, y_ft_val, X_ft_test, y_ft_test, early_stopping, NUM_CLASSES, and model_path are defined elsewhere
 
-new_config = NewConfig()
+def fine_tune_and_evaluate_model():
+    # Configuration for the new dataset
+    class NewConfig:
+        input_size = num_features
+        hidden_size = 128
+        num_hidden_layers = 4
+        num_attention_heads = 8
+        max_position_embeddings = 30
+        num_classes = NUM_CLASSES  # Number of classes in the new dataset
 
-# Build the model with the original number of classes (to match the pretrained weights)
-fine_tuned_model = Transformer(new_config, n_classes=NUM_CLASSES)
+    new_config = NewConfig()
 
-# Explicitly build the model to create variables
-fine_tuned_model.build(input_shape=(None, new_config.max_position_embeddings, new_config.input_size))
+    # Build the model with the original number of classes (to match the pretrained weights)
+    fine_tuned_model = Transformer(new_config, n_classes=NUM_CLASSES)
 
-# Load pretrained weights (including the original final layer)
-fine_tuned_model.load_weights(model_path)
+    # Explicitly build the model to create variables
+    fine_tuned_model.build(input_shape=(None, new_config.max_position_embeddings, new_config.input_size))
 
-# Replace the final classification layer with a new one for the new dataset
-fine_tuned_model.l2 = layers.Dense(
-    y_ft_test.shape[1],
-    activation=None,
-    kernel_initializer='he_normal',  # Use He initialization
-    kernel_regularizer=regularizers.l2(0.001)
-)
+    # Load pretrained weights (including the original final layer)
+    fine_tuned_model.load_weights(model_path)
 
-# Print the model summary
-# fine_tuned_model.summary()
+    # Replace the final classification layer with a new one for the new dataset
+    fine_tuned_model.l2 = layers.Dense(
+        y_ft_test.shape[1],
+        activation=None,
+        kernel_initializer='he_normal',  # Use He initialization
+        kernel_regularizer=regularizers.l2(0.001)
+    )
 
-# Compile the model with a higher learning rate for the new final layer
-# fine_tuned_model.compile(
-#     optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),  # Higher learning rate for the new layer
-#     loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True, label_smoothing=0.1),
-#     metrics=['accuracy']
-# )
+    # Print the model summary (uncomment if needed)
+    # fine_tuned_model.summary()
 
-# # Train the model (focus on training the new final layer first)
-# history = fine_tuned_model.fit(
-#     X_ft_train, 
-#     y_ft_train, 
-#     validation_data=(X_ft_val, y_ft_val), 
-#     epochs=100,  # Fewer epochs for initial training
-#     batch_size=32
-# )
+    # Optionally, unfreeze pretrained layers and fine-tune the entire model
+    for layer in fine_tuned_model.layers:
+        layer.trainable = True
 
-# Optionally, unfreeze pretrained layers and fine-tune the entire model
-for layer in fine_tuned_model.layers:
-    layer.trainable = True
+    # Compile the model with a lower learning rate for fine-tuning
+    fine_tuned_model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),  # Lower learning rate for fine-tuning
+        loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True, label_smoothing=0.1),
+        metrics=['accuracy']
+    )
 
-# Compile the model with a lower learning rate for fine-tuning
-fine_tuned_model.compile(
-    optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),  # Lower learning rate for fine-tuning
-    loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True, label_smoothing=0.1),
-    metrics=['accuracy']
-)
+    # Fine-tune the entire model
+    fine_tuned_history = fine_tuned_model.fit(
+        X_train_augmented, 
+        y_ft_train, 
+        validation_data=(X_ft_val, y_ft_val), 
+        epochs=250,
+        batch_size=32,
+        callbacks=[early_stopping]
+    )
 
-# Fine-tune the entire model
-fine_tuned_history = fine_tuned_model.fit(
-    X_ft_train, 
-    y_ft_train, 
-    validation_data=(X_ft_val, y_ft_val), 
-    epochs=250,
-    batch_size=32,
-    callbacks=[early_stopping]
-)
+    # Evaluate on the test set
+    test_loss, test_accuracy = fine_tuned_model.evaluate(X_ft_test, y_ft_test)
+    print(f"Test Accuracy: {test_accuracy:.4f}")
 
-test_loss, test_accuracy = fine_tuned_model.evaluate(X_ft_test, y_ft_test)
-print(f"Test Accuracy: {test_accuracy:.4f}")
+    # Calculate F1 score and other parameters
+    y_pred = fine_tuned_model.predict(X_ft_test)
+    y_pred_classes = np.argmax(y_pred, axis=1)
+
+    f1 = f1_score(y_ft_test.argmax(axis=1), y_pred_classes, average='weighted')
+    precision = precision_score(y_ft_test.argmax(axis=1), y_pred_classes, average='weighted')
+    recall = recall_score(y_ft_test.argmax(axis=1), y_pred_classes, average='weighted')
+    accuracy = accuracy_score(y_ft_test.argmax(axis=1), y_pred_classes)
+
+    print("F1 Score:", f1)
+    print("Precision:", precision)
+    print("Recall:", recall)
+    print("Accuracy:", accuracy)
+
+    # Return metrics for aggregation
+    return {
+        'test_accuracy': test_accuracy,
+        'f1': f1,
+        'precision': precision,
+        'recall': recall,
+        'accuracy': accuracy
+    }
 
 
-# Calculate F1 score and other parameters
+# List to store metrics from each run
+metrics_list = []
 
-y_pred = fine_tuned_model.predict(X_ft_test)
-y_pred_classes = np.argmax(y_pred, axis=1)
+# Run the function N times
+for run in range(N_RUNS):
+    print(f"\nRun {run + 1}/{N_RUNS}:")
+    print("-" * 50)
+    metrics = fine_tune_and_evaluate_model()
+    metrics_list.append(metrics)
 
-f1 = f1_score(y_ft_test.argmax(axis=1), y_pred_classes, average='weighted')
-precision = precision_score(y_ft_test.argmax(axis=1), y_pred_classes, average='weighted')
-recall = recall_score(y_ft_test.argmax(axis=1), y_pred_classes, average='weighted')
-accuracy = accuracy_score(y_ft_test.argmax(axis=1), y_pred_classes)
+# Calculate and print average metrics
+print("\nSummary of All Runs:")
+print("=" * 50)
 
-print("F1 Score:", f1)
-print("Precision:", precision)
-print("Recall:", recall)
-print("Accuracy:", accuracy)
+# Extract individual metrics into arrays
+test_accuracies = [m['test_accuracy'] for m in metrics_list]
+f1_scores = [m['f1'] for m in metrics_list]
+precisions = [m['precision'] for m in metrics_list]
+recalls = [m['recall'] for m in metrics_list]
+accuracies = [m['accuracy'] for m in metrics_list]
+
+# Print individual run results
+for i, metrics in enumerate(metrics_list):
+    print(f"Run {i + 1}:")
+    print(f"  Test Accuracy: {metrics['test_accuracy']:.4f}")
+    print(f"  F1 Score: {metrics['f1']:.4f}")
+    print(f"  Precision: {metrics['precision']:.4f}")
+    print(f"  Recall: {metrics['recall']:.4f}")
+    print(f"  Accuracy: {metrics['accuracy']:.4f}")
+    print()
+
+# Print average results
+print("Average Metrics Across All Runs:")
+print(f"  Average Test Accuracy: {np.mean(test_accuracies):.4f} (±{np.std(test_accuracies):.4f})")
+print(f"  Average F1 Score: {np.mean(f1_scores):.4f} (±{np.std(f1_scores):.4f})")
+print(f"  Average Precision: {np.mean(precisions):.4f} (±{np.std(precisions):.4f})")
+print(f"  Average Recall: {np.mean(recalls):.4f} (±{np.std(recalls):.4f})")
+print(f"  Average Accuracy: {np.mean(accuracies):.4f} (±{np.std(accuracies):.4f})")
 
 
 # Plot acuracy chart and prompt whether to save it
@@ -332,27 +404,27 @@ print("Accuracy:", accuracy)
 # plt.show()
 
 
-save = input("Do you want to save the Plot? (y/n): ")
-if save.lower() == 'y': 
-    result_dir = '../Results/script_results/'
-    if not os.path.exists(result_dir):
-        os.makedirs(result_dir)
+# save = input("Do you want to save the Plot? (y/n): ")
+# if save.lower() == 'y': 
+#     result_dir = '../Results/script_results/'
+#     if not os.path.exists(result_dir):
+#         os.makedirs(result_dir)
 
-    plot_name = input("Plot name ?: ")
-    plt.plot(fine_tuned_history.history['accuracy'])
-    plt.plot(fine_tuned_history.history['val_accuracy'])
-    plt.ylim(0, 1)
-    plt.title('Model Accuracy')
-    plt.ylabel('Accuracy')
-    plt.xlabel('Epoch')
-    plt.legend(['Train', 'Validation'], loc='upper left')
-    plt.savefig(result_dir +  plot_name + '.png')     
-
-
+#     plot_name = input("Plot name ?: ")
+#     plt.plot(fine_tuned_history.history['accuracy'])
+#     plt.plot(fine_tuned_history.history['val_accuracy'])
+#     plt.ylim(0, 1)
+#     plt.title('Model Accuracy')
+#     plt.ylabel('Accuracy')
+#     plt.xlabel('Epoch')
+#     plt.legend(['Train', 'Validation'], loc='upper left')
+#     plt.savefig(result_dir +  plot_name + '.png')     
 
 
 
-save = input("Do you want to save the model? (y/n): ")
-if save.lower() == 'y': 
-    model_name = input("Model name ?: ")
-    fine_tuned_model.save('../saved_models/finetunning_script/' + model_name + '.h5')
+
+
+# save = input("Do you want to save the model? (y/n): ")
+# if save.lower() == 'y': 
+#     model_name = input("Model name ?: ")
+#     fine_tuned_model.save('../saved_models/finetunning_script/' + model_name + '.h5')
