@@ -109,13 +109,14 @@ fine_tune_video_data, fine_tune_labels = load_landmarks(ft_file_names, num_frame
 # `video_data` has shape (number of videos, num_frames, number of points*2) where points*2 is the flattened landmark count
 # `labels` contains the labels for each video
 
-CUSTOM_NUM_CLASSES = 240
+CUSTOM_NUM_CLASSES = 160
 NUM_CLASSES = len(set(fine_tune_labels))
-INSTANCES_PER_CLASS = 3
+NUM_FT_CLASSES = NUM_CLASSES
+INSTANCES_PER_CLASS = 2
 N_RUNS = 5
 
 # model_path = '../saved_models/book_8/pretrained_model_weights.h5'
-model_path = '../saved_models/book_8/pretrained_model_weights_240_classes.h5'
+model_path = '../saved_models/book_8/pretrained_model_weights_160_classes.h5'
 # model_path = '../saved_models/book_8/pretrained_model_weights_80_with_overlapping_classes.h5'
 
 label_encoder = LabelEncoder()
@@ -385,7 +386,8 @@ print(f"  Average Precision: {np.mean(precisions):.4f} (±{np.std(precisions):.4
 print(f"  Average Recall: {np.mean(recalls):.4f} (±{np.std(recalls):.4f})")
 print(f"  Average Accuracy: {np.mean(accuracies):.4f} (±{np.std(accuracies):.4f})")
 print(f"  Average Number of epochs: {np.mean(epchocs):.4f} (±{np.std(epchocs):.4f})")
-print(f"  Number of classes: {NUM_CLASSES}")
+print(f"  Number of base classes: {NUM_CLASSES}")
+print(f"  Number of ft classes: {NUM_FT_CLASSES}")
 print(f"  Number of instances per class: {INSTANCES_PER_CLASS}")
 
 # Prompt for saving plots permanently
