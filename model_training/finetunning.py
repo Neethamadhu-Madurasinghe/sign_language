@@ -41,24 +41,13 @@ all_data = []
 pose_indices = [0, 15, 16, 17, 18, 19, 20]
 hand_indices = [0, 4, 7, 8, 11, 12, 15, 16, 19, 20]
 
-# pose_indices = [0, 11, 12, 13, 14, 15, 16, 23, 24]
-# hand_indices = [0, 1, 3, 4, 6, 8, 10, 12, 14, 16, 18, 20]
-
-
 def load_landmarks(filenames, num_frames, glossIndex = 4):
-    
-    
     # Prepare storage for data and labels
     video_data = []
     labels = []
     
     for file in filenames:
-     
-        # print(file)
         gloss = file.split('/')[glossIndex]
-        # print(gloss)
-
-
         with open(file, 'rb') as f:
                 landmarks = pickle.load(f)
                     
@@ -91,7 +80,6 @@ def load_landmarks(filenames, num_frames, glossIndex = 4):
                         point = pose_points[idx] if pose_points[idx] is not None else {'x': 0, 'y': 0}
                         extracted_points.extend([point['x'], point['y']])
                         
-                    # print(left_hand_points)
                     for idx in hand_indices:
                         point = left_hand_points[idx] if left_hand_points[idx] is not None else {'x': 0, 'y': 0}
                         extracted_points.extend([point['x'], point['y']])
@@ -107,7 +95,6 @@ def load_landmarks(filenames, num_frames, glossIndex = 4):
                 video_data.append(frames)
                 labels.append(gloss)
                 
-
     # Convert to numpy arrays
     video_data = np.array(video_data)
     labels = np.array(labels)
@@ -124,9 +111,8 @@ fine_tune_video_data, fine_tune_labels = load_landmarks(ft_file_names, num_frame
 
 CUSTOM_NUM_CLASSES = 240
 NUM_CLASSES = len(set(fine_tune_labels))
-INSTANCES_PER_CLASS = 6
-N_RUNS = 3 
-
+INSTANCES_PER_CLASS = 3
+N_RUNS = 5
 
 # model_path = '../saved_models/book_8/pretrained_model_weights.h5'
 model_path = '../saved_models/book_8/pretrained_model_weights_240_classes.h5'
@@ -135,9 +121,6 @@ model_path = '../saved_models/book_8/pretrained_model_weights_240_classes.h5'
 label_encoder = LabelEncoder()
 labels_encoded = label_encoder.fit_transform(fine_tune_labels)
 labels_one_hot = to_categorical(labels_encoded, num_classes=NUM_CLASSES)
-
-# Set the number of instances per class in the training set
-
 
 # Custom split to ensure fixed instances per class in training set
 train_indices = []
@@ -177,11 +160,6 @@ print(sum(class_counts.values()) / len(class_counts))
 
 NUM_CLASSES = CUSTOM_NUM_CLASSES
 
-
-
-
-
-
 class PositionEmbedding(layers.Layer):
     def __init__(self, config):
         super(PositionEmbedding, self).__init__()
@@ -197,7 +175,6 @@ class PositionEmbedding(layers.Layer):
         positions = tf.range(start=0, limit=seq_length, delta=1)
         position_embeddings = tf.gather(self.position_embeddings, positions)
         return x + position_embeddings
-
 
 class Transformer(Model):
     def __init__(self, config, n_classes=50, freeze_pretrained=False):
@@ -242,16 +219,12 @@ class Transformer(Model):
         x = self.dropout(x, training=training)
         x = self.l2(x)
         return x
-    
-
-
 
 early_stopping = EarlyStopping(
     monitor='val_loss',  # Monitor validation loss
     patience=10,         # Stop if no improvement for 10 epochs
     restore_best_weights=True  # Restore weights from the best epoch
 )
-
 
 # Configuration
 num_features = X_ft_train.shape[2]
@@ -265,15 +238,7 @@ def augment_data(x):
 # Apply augmentation during training
 X_train_augmented = augment_data(X_ft_train)
 
-
-import numpy as np
-import tensorflow as tf
-from tensorflow.keras import layers, regularizers
-from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
-
-# Assuming Transformer, num_features, X_train_augmented, X_ft_train, y_ft_train, X_ft_val, y_ft_val, X_ft_test, y_ft_test, early_stopping, NUM_CLASSES, and model_path are defined elsewhere
-
-def fine_tune_and_evaluate_model():
+def fine_tune_and_evaluate_model(run_num):
     # Configuration for the new dataset
     class NewConfig:
         input_size = num_features
@@ -301,9 +266,6 @@ def fine_tune_and_evaluate_model():
         kernel_initializer='he_normal',  # Use He initialization
         kernel_regularizer=regularizers.l2(0.001)
     )
-
-    # Print the model summary (uncomment if needed)
-    # fine_tuned_model.summary()
 
     # Optionally, unfreeze pretrained layers and fine-tune the entire model
     for layer in fine_tuned_model.layers:
@@ -344,15 +306,43 @@ def fine_tune_and_evaluate_model():
     print("Recall:", recall)
     print("Accuracy:", accuracy)
 
+    # Save plots for middle run only
+    middle_run = N_RUNS // 2 + 1 if N_RUNS % 2 else N_RUNS // 2  # Calculate middle run (e.g., 2 for 3 runs)
+    if run_num == middle_run:
+        # Create temporary directory for plots
+        temp_dir = './temp_plots'
+        os.makedirs(temp_dir, exist_ok=True)
+
+        # Plot and save accuracy
+        plt.plot(fine_tuned_history.history['accuracy'], label='Train')
+        plt.plot(fine_tuned_history.history['val_accuracy'], label='Validation')
+        plt.title('Model Accuracy')
+        plt.ylabel('Accuracy')
+        plt.xlabel('Epoch')
+        plt.ylim(0, 1)
+        plt.grid(True)
+        plt.legend(['Train', 'Validation'], loc='upper left')
+        plt.savefig(os.path.join(temp_dir, 'accuracy_plot.png'))
+        plt.close()
+
+        # Plot and save confusion matrix
+        cm = confusion_matrix(y_ft_test.argmax(axis=1), y_pred_classes)
+        plt.figure(figsize=(30, 30))
+        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
+        plt.xlabel("Predicted")
+        plt.ylabel("Actual")
+        plt.savefig(os.path.join(temp_dir, 'confusion_matrix.png'))
+        plt.close()
+
     # Return metrics for aggregation
     return {
         'test_accuracy': test_accuracy,
         'f1': f1,
         'precision': precision,
         'recall': recall,
-        'accuracy': accuracy
+        'accuracy': accuracy,
+        'epochs': len(fine_tuned_history.history['accuracy'])
     }
-
 
 # List to store metrics from each run
 metrics_list = []
@@ -361,7 +351,7 @@ metrics_list = []
 for run in range(N_RUNS):
     print(f"\nRun {run + 1}/{N_RUNS}:")
     print("-" * 50)
-    metrics = fine_tune_and_evaluate_model()
+    metrics = fine_tune_and_evaluate_model(run + 1)
     metrics_list.append(metrics)
 
 # Calculate and print average metrics
@@ -374,6 +364,7 @@ f1_scores = [m['f1'] for m in metrics_list]
 precisions = [m['precision'] for m in metrics_list]
 recalls = [m['recall'] for m in metrics_list]
 accuracies = [m['accuracy'] for m in metrics_list]
+epchocs = [m['epochs'] for m in metrics_list]
 
 # Print individual run results
 for i, metrics in enumerate(metrics_list):
@@ -383,6 +374,7 @@ for i, metrics in enumerate(metrics_list):
     print(f"  Precision: {metrics['precision']:.4f}")
     print(f"  Recall: {metrics['recall']:.4f}")
     print(f"  Accuracy: {metrics['accuracy']:.4f}")
+    print(f"  Epcochs: {metrics['epochs']:.4f}")
     print()
 
 # Print average results
@@ -392,39 +384,24 @@ print(f"  Average F1 Score: {np.mean(f1_scores):.4f} (±{np.std(f1_scores):.4f})
 print(f"  Average Precision: {np.mean(precisions):.4f} (±{np.std(precisions):.4f})")
 print(f"  Average Recall: {np.mean(recalls):.4f} (±{np.std(recalls):.4f})")
 print(f"  Average Accuracy: {np.mean(accuracies):.4f} (±{np.std(accuracies):.4f})")
+print(f"  Average Number of epochs: {np.mean(epchocs):.4f} (±{np.std(epchocs):.4f})")
+print(f"  Number of classes: {NUM_CLASSES}")
+print(f"  Number of instances per class: {INSTANCES_PER_CLASS}")
 
-
-# Plot acuracy chart and prompt whether to save it
-# plt.plot(fine_tuned_history.history['accuracy'])
-# plt.plot(fine_tuned_history.history['val_accuracy'])
-# plt.title('Model Accuracy')
-# plt.ylabel('Accuracy')
-# plt.xlabel('Epoch')
-# plt.legend(['Train', 'Validation'], loc='upper left')
-# plt.show()
-
-
-# save = input("Do you want to save the Plot? (y/n): ")
-# if save.lower() == 'y': 
-#     result_dir = '../Results/script_results/'
-#     if not os.path.exists(result_dir):
-#         os.makedirs(result_dir)
-
-#     plot_name = input("Plot name ?: ")
-#     plt.plot(fine_tuned_history.history['accuracy'])
-#     plt.plot(fine_tuned_history.history['val_accuracy'])
-#     plt.ylim(0, 1)
-#     plt.title('Model Accuracy')
-#     plt.ylabel('Accuracy')
-#     plt.xlabel('Epoch')
-#     plt.legend(['Train', 'Validation'], loc='upper left')
-#     plt.savefig(result_dir +  plot_name + '.png')     
-
-
-
-
-
-# save = input("Do you want to save the model? (y/n): ")
-# if save.lower() == 'y': 
-#     model_name = input("Model name ?: ")
-#     fine_tuned_model.save('../saved_models/finetunning_script/' + model_name + '.h5')
+# Prompt for saving plots permanently
+temp_dir = './temp_plots'
+if os.path.exists(temp_dir):
+    save_choice = input("\nDo you want to save the plots permanently? (y/n): ").lower()
+    if save_choice == 'y':
+        folder_name = input("Enter folder name for saving plots: ")
+        result_dir = '../Results/script_results/'
+        save_path = os.path.join(result_dir, folder_name)
+        os.makedirs(save_path, exist_ok=True)
+        
+        # Move plots from temporary to permanent location
+        for plot_file in os.listdir(temp_dir):
+            shutil.move(os.path.join(temp_dir, plot_file), os.path.join(save_path, plot_file))
+        print(f"Plots saved to {save_path}")
+    
+    # Clean up temporary directory
+    shutil.rmtree(temp_dir)

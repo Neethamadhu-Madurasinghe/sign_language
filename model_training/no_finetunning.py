@@ -40,7 +40,8 @@ print(len(file_names))
 
 
 all_data = []
-N_RUNS = 3
+N_RUNS = 5
+INSTANCES_PER_CLASS = 3  # Change this as needed (e.g., 2, 3, 4, etc.)
 
 pose_indices = [0, 15, 16, 17, 18, 19, 20]
 hand_indices = [0, 4, 7, 8, 11, 12, 15, 16, 19, 20]
@@ -132,7 +133,7 @@ NUM_CLASSES = len(set(labels))
 
 
 # Set the number of instances per class in the training set
-INSTANCES_PER_CLASS = 6  # Change this as needed (e.g., 2, 3, 4, etc.)
+
 CUSTOM_NUM_CLASSES = NUM_CLASSES  # Assuming NUM_CLASSES is defined elsewhere
 
 # Count the occurrences of each class
@@ -283,11 +284,9 @@ num_features = X_train_augmented.shape[2]
 print("Num features: ", num_features)
 
 
-
-
 # Assuming Transformer, num_features, X_train_augmented, y_train, X_val, y_val, X_test, y_test, early_stopping, and NUM_CLASSES are defined elsewhere
 
-def create_train_evaluate_model():
+def create_train_evaluate_model(run_num):
     class Config:
         input_size = num_features
         hidden_size = 128
@@ -355,13 +354,42 @@ def create_train_evaluate_model():
     print("Recall:", recall)
     print("Accuracy:", accuracy)
 
+    # Save plots for middle run only
+    middle_run = N_RUNS // 2 + 1 if N_RUNS % 2 else N_RUNS // 2  # Calculate middle run (e.g., 2 for 3 runs)
+    if run_num == middle_run:
+        # Create temporary directory for plots
+        temp_dir = './temp_plots'
+        os.makedirs(temp_dir, exist_ok=True)
+
+        # Plot and save accuracy
+        plt.plot(history.history['accuracy'], label='Train')
+        plt.plot(history.history['val_accuracy'], label='Validation')
+        plt.title('Model Accuracy')
+        plt.ylabel('Accuracy')
+        plt.xlabel('Epoch')
+        plt.ylim(0, 1)
+        plt.grid(True)
+        plt.legend(['Train', 'Validation'], loc='upper left')
+        plt.savefig(os.path.join(temp_dir, 'accuracy_plot.png'))
+        plt.close()
+
+        # Plot and save confusion matrix
+        cm = confusion_matrix(y_test.argmax(axis=1), y_pred_classes)
+        plt.figure(figsize=(30, 30))
+        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=set(top_classes), yticklabels=set(top_classes))
+        plt.xlabel("Predicted")
+        plt.ylabel("Actual")
+        plt.savefig(os.path.join(temp_dir, 'confusion_matrix.png'))
+        plt.close()
+
     # Return metrics for aggregation
     return {
         'test_accuracy': test_accuracy,
         'f1': f1,
         'precision': precision,
         'recall': recall,
-        'accuracy': accuracy
+        'accuracy': accuracy,
+        'epochs': len(history.history['accuracy'])
     }
 
 
@@ -373,7 +401,7 @@ metrics_list = []
 for run in range(N_RUNS):
     print(f"\nRun {run + 1}/{N_RUNS}:")
     print("-" * 50)
-    metrics = create_train_evaluate_model()
+    metrics = create_train_evaluate_model(run + 1)
     metrics_list.append(metrics)
 
 # Calculate and print average metrics
@@ -386,6 +414,7 @@ f1_scores = [m['f1'] for m in metrics_list]
 precisions = [m['precision'] for m in metrics_list]
 recalls = [m['recall'] for m in metrics_list]
 accuracies = [m['accuracy'] for m in metrics_list]
+epchocs = [m['epochs'] for m in metrics_list]
 
 # Print individual run results
 for i, metrics in enumerate(metrics_list):
@@ -395,6 +424,7 @@ for i, metrics in enumerate(metrics_list):
     print(f"  Precision: {metrics['precision']:.4f}")
     print(f"  Recall: {metrics['recall']:.4f}")
     print(f"  Accuracy: {metrics['accuracy']:.4f}")
+    print(f"  Epcochs: {metrics['epochs']:.4f}")
     print()
 
 # Print average results
@@ -404,3 +434,24 @@ print(f"  Average F1 Score: {np.mean(f1_scores):.4f} (±{np.std(f1_scores):.4f})
 print(f"  Average Precision: {np.mean(precisions):.4f} (±{np.std(precisions):.4f})")
 print(f"  Average Recall: {np.mean(recalls):.4f} (±{np.std(recalls):.4f})")
 print(f"  Average Accuracy: {np.mean(accuracies):.4f} (±{np.std(accuracies):.4f})")
+print(f"  Average Number of epochs: {np.mean(epchocs):.4f} (±{np.std(epchocs):.4f})")
+print(f"  Number of classes: {NUM_CLASSES}")
+print(f"  Number of instances per class: {INSTANCES_PER_CLASS}")
+
+# Prompt for saving plots permanently
+temp_dir = './temp_plots'
+if os.path.exists(temp_dir):
+    save_choice = input("\nDo you want to save the plots permanently? (y/n): ").lower()
+    if save_choice == 'y':
+        folder_name = input("Enter folder name for saving plots: ")
+        result_dir = '../Results/script_results/'
+        save_path = os.path.join(result_dir, folder_name)
+        os.makedirs(save_path, exist_ok=True)
+        
+        # Move plots from temporary to permanent location
+        for plot_file in os.listdir(temp_dir):
+            shutil.move(os.path.join(temp_dir, plot_file), os.path.join(save_path, plot_file))
+        print(f"Plots saved to {save_path}")
+    
+    # Clean up temporary directory
+    shutil.rmtree(temp_dir)
