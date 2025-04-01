@@ -116,8 +116,8 @@ INSTANCES_PER_CLASS = 2
 N_RUNS = 5
 
 # model_path = '../saved_models/book_8/pretrained_model_weights.h5'
-model_path = '../saved_models/book_8/pretrained_model_weights_80_classes.h5'
-# model_path = '../saved_models/book_8/pretrained_model_weights_80_with_overlapping_classes.h5'
+# model_path = '../saved_models/book_8/pretrained_model_weights_80_classes.h5'
+model_path = '../saved_models/book_8/pretrained_model_weights_80_with_overlapping_classes.h5'
 
 label_encoder = LabelEncoder()
 labels_encoded = label_encoder.fit_transform(fine_tune_labels)
