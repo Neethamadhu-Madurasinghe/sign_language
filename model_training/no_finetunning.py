@@ -41,7 +41,7 @@ print(len(file_names))
 
 all_data = []
 N_RUNS = 5
-INSTANCES_PER_CLASS = 3  # Change this as needed (e.g., 2, 3, 4, etc.)
+INSTANCES_PER_CLASS = 2  # Change this as needed (e.g., 2, 3, 4, etc.)
 
 pose_indices = [0, 15, 16, 17, 18, 19, 20]
 hand_indices = [0, 4, 7, 8, 11, 12, 15, 16, 19, 20]

@@ -109,19 +109,27 @@ fine_tune_video_data, fine_tune_labels = load_landmarks(ft_file_names, num_frame
 # `video_data` has shape (number of videos, num_frames, number of points*2) where points*2 is the flattened landmark count
 # `labels` contains the labels for each video
 
-CUSTOM_NUM_CLASSES = 80
+CUSTOM_NUM_CLASSES = 240
 NUM_CLASSES = len(set(fine_tune_labels))
 NUM_FT_CLASSES = NUM_CLASSES
 INSTANCES_PER_CLASS = 2
 N_RUNS = 5
 
+
 # model_path = '../saved_models/book_8/pretrained_model_weights.h5'
-# model_path = '../saved_models/book_8/pretrained_model_weights_80_classes.h5'
-model_path = '../saved_models/book_8/pretrained_model_weights_80_with_overlapping_classes.h5'
+model_path = '../saved_models/book_8/pretrained_model_weights_240_classes.h5'
+# model_path = '../saved_models/book_8/pretrained_model_weights_80_with_overlapping_classes.h5'
+
+# Count the occurrences of each class
+class_counts = Counter(fine_tune_labels)
+
+# Sort classes by their counts in descending order and select the top NUM_CLASSES classes
+top_classes = [cls for cls, count in class_counts.most_common(NUM_FT_CLASSES)]
 
 label_encoder = LabelEncoder()
 labels_encoded = label_encoder.fit_transform(fine_tune_labels)
 labels_one_hot = to_categorical(labels_encoded, num_classes=NUM_CLASSES)
+
 
 # Custom split to ensure fixed instances per class in training set
 train_indices = []
@@ -329,7 +337,7 @@ def fine_tune_and_evaluate_model(run_num):
         # Plot and save confusion matrix
         cm = confusion_matrix(y_ft_test.argmax(axis=1), y_pred_classes)
         plt.figure(figsize=(30, 30))
-        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
+        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=set(top_classes), yticklabels=set(top_classes))
         plt.xlabel("Predicted")
         plt.ylabel("Actual")
         plt.savefig(os.path.join(temp_dir, 'confusion_matrix.png'))
