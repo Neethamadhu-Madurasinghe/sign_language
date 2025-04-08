@@ -11,7 +11,7 @@ mp_holistic = mp.solutions.holistic
 
 # Path to the pickle file
 # pickle_file_path = '../all_outputs/output_include/Adjectives/bad'  
-pickle_file_path = '../all_outputs/output_ssl_small/w048'  
+pickle_file_path = '../all_outputs/output_ssl_small/Exam'  
 output_dir = '../all_outputs/output_holistic'
 
 pickle_files = []
@@ -67,33 +67,46 @@ def draw_landmarks_on_image(image, frame_landmarks):
             cv2.circle(image, (int(lm['x'] * image.shape[1]), int(lm['y'] * image.shape[0])), 4, (0, 0, 255), -1)        
 
 
-def read_pickle_and_draw_skeleton(pickle_file):
+def read_pickle_and_draw_skeleton(pickle_file, output_dir):
     # Load the landmarks data from the pickle file
     with open(pickle_file, 'rb') as f:
         video_landmarks = pickle.load(f)
-        # print(len(video_landmarks))
+        print("number of frames")
+        print(len(video_landmarks))
     
+    # Define the output video path and create the directory if needed
+    os.makedirs(output_dir, exist_ok=True)
+    output_path = os.path.join(output_dir, 'skeleton_output.avi')
+
+    # Set up video writer
+    frame_height = 720
+    frame_width = 1280
+    fps = 20
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')  # Use 'mp4v' for .mp4 files
+    # out = cv2.VideoWriter(output_path, fourcc, fps, (frame_width, frame_height))
+
     # Create a window to display the output
     cv2.namedWindow('Skeleton', cv2.WINDOW_NORMAL)
-    
-    # Loop through each frame's landmark data
+
     for i, frame_landmarks in enumerate(video_landmarks):
-        # Create a blank image (or you could load a video frame here)
-        image = 255 * np.zeros(shape=[720, 1280, 3], dtype=np.uint8)
+        # Create a blank white image
+        image = 255 * np.ones(shape=[frame_height, frame_width, 3], dtype=np.uint8)
 
         # Draw the landmarks on the image
         draw_landmarks_on_image(image, frame_landmarks)
 
-        # Display the image with landmarks
+        # Show the image
         cv2.imshow('Skeleton', image)
 
-        # wait a second before showing the next frame
-        cv2.waitKey(100)
-        
+        # Write the frame to the video file
+        # out.write(image)
+
         # Wait for 50ms (20 fps) or exit if 'q' is pressed
         if cv2.waitKey(50) & 0xFF == ord('q'):
             break
-    
+
+    # Release everything when done
+    out.release()
     cv2.destroyAllWindows()
 
 
@@ -110,7 +123,7 @@ async def main():
     # Process each video one by one
     for pickle_file in pickle_files[:1]:
         print(f"Processing file: {pickle_file}")
-        read_pickle_and_draw_skeleton(pickle_file)
+        read_pickle_and_draw_skeleton(pickle_file, output_dir)
         
     print(f"Completed processing {len(pickle_file)} videos")
 

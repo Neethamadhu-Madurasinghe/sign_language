@@ -11,7 +11,7 @@ mp_holistic = mp.solutions.holistic
 
 # Path to the pickle file
 # pickle_file_path = '../all_outputs/output_include/Adjectives/bad'  
-pickle_file_path = '../all_outputs/output_ssl_small/w003'  
+pickle_file_path = '../all_outputs/output_ssl_small/Exam'  
 output_dir = '../all_outputs/output_holistic'
 
 pickle_files = []
@@ -71,7 +71,8 @@ def read_pickle_and_draw_skeleton(pickle_file):
     # Load the landmarks data from the pickle file
     with open(pickle_file, 'rb') as f:
         video_landmarks = pickle.load(f)
-        # print(video_landmarks)
+        print("# frames: ")
+        print(len(video_landmarks))
     
     # Create a window to display the output
     cv2.namedWindow('Skeleton', cv2.WINDOW_NORMAL)
