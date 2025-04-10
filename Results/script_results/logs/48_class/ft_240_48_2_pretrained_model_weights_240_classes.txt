@@ -1,0 +1,55 @@
+# Individual Run Results
+Run 1:
+  Test Accuracy: 0.5446
+  F1 Score: 0.5393
+  Precision: 0.6112
+  Recall: 0.5446
+  Accuracy: 0.5446
+  Epochs: 67.0000
+
+Run 2:
+  Test Accuracy: 0.5060
+  F1 Score: 0.5127
+  Precision: 0.5817
+  Recall: 0.5060
+  Accuracy: 0.5060
+  Epochs: 65.0000
+
+Run 3:
+  Test Accuracy: 0.4792
+  F1 Score: 0.4755
+  Precision: 0.5989
+  Recall: 0.4792
+  Accuracy: 0.4792
+  Epochs: 51.0000
+
+Run 4:
+  Test Accuracy: 0.5030
+  F1 Score: 0.4991
+  Precision: 0.5833
+  Recall: 0.5030
+  Accuracy: 0.5030
+  Epochs: 61.0000
+
+Run 5:
+  Test Accuracy: 0.5030
+  F1 Score: 0.5026
+  Precision: 0.5570
+  Recall: 0.5030
+  Accuracy: 0.5030
+  Epochs: 67.0000
+
+Average Metrics Across All Runs:
+  Average Test Accuracy: 0.5071 (±0.0211)
+  Average F1 Score: 0.5059 (±0.0207)
+  Average Precision: 0.5864 (±0.0182)
+  Average Recall: 0.5071 (±0.0211)
+  Average Accuracy: 0.5071 (±0.0211)
+  Average Number of Epochs: 62.2000 (±6.0133)
+  Test shapes: 336, 48
+  Number of base classes: 240
+  Number of ft classes: 48
+  Model name: pretrained_model_weights_240_classes
+  Number of instances per class: 2
+==================================================
+

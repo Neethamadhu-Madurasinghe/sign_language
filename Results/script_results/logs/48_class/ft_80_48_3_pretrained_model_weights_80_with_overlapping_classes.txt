@@ -1,0 +1,55 @@
+# Individual Run Results
+Run 1:
+  Test Accuracy: 0.5595
+  F1 Score: 0.5456
+  Precision: 0.5917
+  Recall: 0.5595
+  Accuracy: 0.5595
+  Epochs: 83.0000
+
+Run 2:
+  Test Accuracy: 0.5655
+  F1 Score: 0.5490
+  Precision: 0.5903
+  Recall: 0.5655
+  Accuracy: 0.5655
+  Epochs: 83.0000
+
+Run 3:
+  Test Accuracy: 0.5387
+  F1 Score: 0.5317
+  Precision: 0.5739
+  Recall: 0.5387
+  Accuracy: 0.5387
+  Epochs: 79.0000
+
+Run 4:
+  Test Accuracy: 0.5625
+  F1 Score: 0.5398
+  Precision: 0.5759
+  Recall: 0.5625
+  Accuracy: 0.5625
+  Epochs: 73.0000
+
+Run 5:
+  Test Accuracy: 0.5893
+  F1 Score: 0.5721
+  Precision: 0.6036
+  Recall: 0.5893
+  Accuracy: 0.5893
+  Epochs: 89.0000
+
+Average Metrics Across All Runs:
+  Average Test Accuracy: 0.5631 (±0.0161)
+  Average F1 Score: 0.5476 (±0.0136)
+  Average Precision: 0.5871 (±0.0110)
+  Average Recall: 0.5631 (±0.0161)
+  Average Accuracy: 0.5631 (±0.0161)
+  Average Number of Epochs: 81.4000 (±5.2764)
+  Test shapes: 336, 48
+  Number of base classes: 80
+  Number of ft classes: 48
+  Model name: pretrained_model_weights_80_with_overlapping_classes
+  Number of instances per class: 3
+==================================================
+

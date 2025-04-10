@@ -1,0 +1,52 @@
+# Individual Run Results
+Run 1:
+  Test Accuracy: 0.7969
+  F1 Score: 0.7905
+  Precision: 0.8233
+  Recall: 0.7969
+  Accuracy: 0.7969
+  Epochs: 153.0000
+
+Run 2:
+  Test Accuracy: 0.7612
+  F1 Score: 0.7560
+  Precision: 0.7845
+  Recall: 0.7612
+  Accuracy: 0.7612
+  Epochs: 130.0000
+
+Run 3:
+  Test Accuracy: 0.7656
+  F1 Score: 0.7590
+  Precision: 0.7985
+  Recall: 0.7656
+  Accuracy: 0.7656
+  Epochs: 184.0000
+
+Run 4:
+  Test Accuracy: 0.7656
+  F1 Score: 0.7648
+  Precision: 0.8006
+  Recall: 0.7656
+  Accuracy: 0.7656
+  Epochs: 150.0000
+
+Run 5:
+  Test Accuracy: 0.7500
+  F1 Score: 0.7468
+  Precision: 0.7924
+  Recall: 0.7500
+  Accuracy: 0.7500
+  Epochs: 146.0000
+
+Average Metrics Across All Runs:
+  Average Test Accuracy: 0.7679 (±0.0156)
+  Average F1 Score: 0.7634 (±0.0148)
+  Average Precision: 0.7999 (±0.0130)
+  Average Recall: 0.7679 (±0.0156)
+  Average Accuracy: 0.7679 (±0.0156)
+  Average Number of Epochs: 152.6000 (±17.5909)
+  Number of classes: 64
+  Number of instances per class: 6
+==================================================
+
