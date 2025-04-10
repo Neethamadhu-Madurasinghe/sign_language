@@ -6,7 +6,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import joblib
 import seaborn as sns
-
+import argparse
+import sys
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
@@ -36,12 +37,28 @@ for root, _, files in os.walk(data_directory):  # Walk through all directories a
         for filename in files:
             file_names.append(os.path.join(root, filename))
 
-print(len(file_names))            
+print(len(file_names))    
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--runid', type=int, default=False)
+parser.add_argument('--instances', type=int, required=True)
+args = parser.parse_args()
+
+INSTANCES_PER_CLASS = args.instances
+RUN_ID = args.runid if args.runid is not False else False
+
+try:
+    INSTANCES_PER_CLASS = int(INSTANCES_PER_CLASS)
+    if RUN_ID is not False:
+        RUN_ID = int(RUN_ID)
+except (TypeError, ValueError):
+    print("❌ Error: INSTANCES_PER_CLASS and BASE_SIZE must be valid integers.")
+    sys.exit(1)
 
 
 all_data = []
-N_RUNS = 5
-INSTANCES_PER_CLASS = 2  # Change this as needed (e.g., 2, 3, 4, etc.)
+N_RUNS = 1
+TESTING_INSTANCES_START_INDEX = 6
 
 pose_indices = [0, 15, 16, 17, 18, 19, 20]
 hand_indices = [0, 4, 7, 8, 11, 12, 15, 16, 19, 20]
@@ -165,7 +182,7 @@ for cls in range(len(top_classes)):
     # Take fixed number of instances for training
     train_indices.extend(cls_indices[:INSTANCES_PER_CLASS])
     # Remaining instances go to validation/test
-    val_test_indices.extend(cls_indices[INSTANCES_PER_CLASS:])
+    val_test_indices.extend(cls_indices[TESTING_INSTANCES_START_INDEX:])
 
 # Convert to numpy arrays
 X_train = video_data_filtered[train_indices]
@@ -438,12 +455,42 @@ print(f"  Average Number of epochs: {np.mean(epchocs):.4f} (±{np.std(epchocs):.
 print(f"  Number of classes: {NUM_CLASSES}")
 print(f"  Number of instances per class: {INSTANCES_PER_CLASS}")
 
+output_file = '../Results/script_results/logs/no_ft_' + str(NUM_CLASSES) + '_' + str(INSTANCES_PER_CLASS) + '.txt'
+
+with open(output_file, "a") as f:
+    f.write("# Individual Run Results\n")
+    for i, metrics in enumerate(metrics_list):
+        f.write(f"Run {i + 1}:\n")
+        f.write(f"  Test Accuracy: {metrics['test_accuracy']:.4f}\n")
+        f.write(f"  F1 Score: {metrics['f1']:.4f}\n")
+        f.write(f"  Precision: {metrics['precision']:.4f}\n")
+        f.write(f"  Recall: {metrics['recall']:.4f}\n")
+        f.write(f"  Accuracy: {metrics['accuracy']:.4f}\n")
+        f.write(f"  Epochs: {metrics['epochs']:.4f}\n")
+        f.write("\n")
+
+    f.write("Average Metrics Across All Runs:\n")
+    f.write(f"  Average Test Accuracy: {np.mean(test_accuracies):.4f} (±{np.std(test_accuracies):.4f})\n")
+    f.write(f"  Average F1 Score: {np.mean(f1_scores):.4f} (±{np.std(f1_scores):.4f})\n")
+    f.write(f"  Average Precision: {np.mean(precisions):.4f} (±{np.std(precisions):.4f})\n")
+    f.write(f"  Average Recall: {np.mean(recalls):.4f} (±{np.std(recalls):.4f})\n")
+    f.write(f"  Average Accuracy: {np.mean(accuracies):.4f} (±{np.std(accuracies):.4f})\n")
+    f.write(f"  Average Number of Epochs: {np.mean(epchocs):.4f} (±{np.std(epchocs):.4f})\n")
+    f.write(f"  Number of classes: {NUM_CLASSES}\n")
+    f.write(f"  Number of instances per class: {INSTANCES_PER_CLASS}\n")
+    f.write("="*50 + "\n\n")  # Separator between runs
+
 # Prompt for saving plots permanently
 temp_dir = './temp_plots'
 if os.path.exists(temp_dir):
-    save_choice = input("\nDo you want to save the plots permanently? (y/n): ").lower()
-    if save_choice == 'y':
-        folder_name = input("Enter folder name for saving plots: ")
+    # save_choice = input("\nDo you want to save the plots permanently? (y/n): ").lower()
+    # if save_choice == 'y':
+    if True:
+        # folder_name = input("Enter folder name for saving plots: ")
+        folder_name = f"no_ft_{NUM_CLASSES}_class_{INSTANCES_PER_CLASS}_instance"
+        if RUN_ID is not False:
+            folder_name += f"_{RUN_ID}"
+        
         result_dir = '../Results/script_results/'
         save_path = os.path.join(result_dir, folder_name)
         os.makedirs(save_path, exist_ok=True)

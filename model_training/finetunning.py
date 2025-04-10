@@ -6,7 +6,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import joblib
 import seaborn as sns
-
+import argparse
+import sys
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
@@ -109,16 +110,36 @@ fine_tune_video_data, fine_tune_labels = load_landmarks(ft_file_names, num_frame
 # `video_data` has shape (number of videos, num_frames, number of points*2) where points*2 is the flattened landmark count
 # `labels` contains the labels for each video
 
-CUSTOM_NUM_CLASSES = 80
+parser = argparse.ArgumentParser()
+parser.add_argument('--runid', type=int, default=False)
+parser.add_argument('--instances', type=int, required=True)
+parser.add_argument('--basesize', type=int, required=True)
+parser.add_argument('--basemodel', type=str, required=True)
+args = parser.parse_args()
+
+INSTANCES_PER_CLASS = args.instances
+RUN_ID = args.runid if args.runid is not False else False
+CUSTOM_NUM_CLASSES = args.basesize
+BASE_MODEL = args.basemodel
+
+try:
+    INSTANCES_PER_CLASS = int(INSTANCES_PER_CLASS)
+    CUSTOM_NUM_CLASSES = int(CUSTOM_NUM_CLASSES)
+    if RUN_ID is not False:
+        RUN_ID = int(RUN_ID)
+except (TypeError, ValueError):
+    print("❌ Error: INSTANCES_PER_CLASS and BASE_SIZE must be valid integers.")
+    sys.exit(1)
+
+
 NUM_CLASSES = len(set(fine_tune_labels))
 NUM_FT_CLASSES = NUM_CLASSES
-INSTANCES_PER_CLASS = 2
 N_RUNS = 5
-
+TESTING_INSTANCES_START_INDEX = 6
 
 # model_path = '../saved_models/book_8/pretrained_model_weights.h5'
 # model_path = '../saved_models/book_8/pretrained_model_weights_80_classes.h5'
-model_path = '../saved_models/book_8/pretrained_model_weights_80_with_overlapping_classes.h5'
+model_path = f"../saved_models/book_8/{BASE_MODEL}.h5"
 
 # Count the occurrences of each class
 class_counts = Counter(fine_tune_labels)
@@ -145,7 +166,7 @@ for cls in range(NUM_CLASSES):
     # Take fixed number of instances for training
     train_indices.extend(cls_indices[:INSTANCES_PER_CLASS])
     # Remaining instances go to validation/test
-    val_test_indices.extend(cls_indices[INSTANCES_PER_CLASS:])
+    val_test_indices.extend(cls_indices[TESTING_INSTANCES_START_INDEX:])
 
 # Convert to numpy arrays
 X_ft_train = fine_tune_video_data[train_indices]
@@ -394,16 +415,50 @@ print(f"  Average Precision: {np.mean(precisions):.4f} (±{np.std(precisions):.4
 print(f"  Average Recall: {np.mean(recalls):.4f} (±{np.std(recalls):.4f})")
 print(f"  Average Accuracy: {np.mean(accuracies):.4f} (±{np.std(accuracies):.4f})")
 print(f"  Average Number of epochs: {np.mean(epchocs):.4f} (±{np.std(epchocs):.4f})")
+print(f"  Test shapes: {y_ft_test.shape[0]}, {y_ft_test.shape[1]}")
 print(f"  Number of base classes: {NUM_CLASSES}")
 print(f"  Number of ft classes: {NUM_FT_CLASSES}")
 print(f"  Number of instances per class: {INSTANCES_PER_CLASS}")
 
+output_file = '../Results/script_results/logs/ft_' + str(NUM_CLASSES) + '_' + str(NUM_FT_CLASSES) + '_' + str(INSTANCES_PER_CLASS) + '_' + str(BASE_MODEL)  + '.txt'
+
+with open(output_file, "a") as f:
+    f.write("# Individual Run Results\n")
+    for i, metrics in enumerate(metrics_list):
+        f.write(f"Run {i + 1}:\n")
+        f.write(f"  Test Accuracy: {metrics['test_accuracy']:.4f}\n")
+        f.write(f"  F1 Score: {metrics['f1']:.4f}\n")
+        f.write(f"  Precision: {metrics['precision']:.4f}\n")
+        f.write(f"  Recall: {metrics['recall']:.4f}\n")
+        f.write(f"  Accuracy: {metrics['accuracy']:.4f}\n")
+        f.write(f"  Epochs: {metrics['epochs']:.4f}\n")
+        f.write("\n")
+
+    f.write("Average Metrics Across All Runs:\n")
+    f.write(f"  Average Test Accuracy: {np.mean(test_accuracies):.4f} (±{np.std(test_accuracies):.4f})\n")
+    f.write(f"  Average F1 Score: {np.mean(f1_scores):.4f} (±{np.std(f1_scores):.4f})\n")
+    f.write(f"  Average Precision: {np.mean(precisions):.4f} (±{np.std(precisions):.4f})\n")
+    f.write(f"  Average Recall: {np.mean(recalls):.4f} (±{np.std(recalls):.4f})\n")
+    f.write(f"  Average Accuracy: {np.mean(accuracies):.4f} (±{np.std(accuracies):.4f})\n")
+    f.write(f"  Average Number of Epochs: {np.mean(epchocs):.4f} (±{np.std(epchocs):.4f})\n")
+    f.write(f"  Test shapes: {y_ft_test.shape[0]}, {y_ft_test.shape[1]}\n")
+    f.write(f"  Number of base classes: {NUM_CLASSES}\n")
+    f.write(f"  Number of ft classes: {NUM_FT_CLASSES}\n")
+    f.write(f"  Model name: {BASE_MODEL}\n")
+    f.write(f"  Number of instances per class: {INSTANCES_PER_CLASS}\n")
+    f.write("="*50 + "\n\n")  # Separator between runs
+
 # Prompt for saving plots permanently
 temp_dir = './temp_plots'
 if os.path.exists(temp_dir):
-    save_choice = input("\nDo you want to save the plots permanently? (y/n): ").lower()
-    if save_choice == 'y':
-        folder_name = input("Enter folder name for saving plots: ")
+    # save_choice = input("\nDo you want to save the plots permanently? (y/n): ").lower()
+    # if save_choice == 'y':
+    if True:
+        # folder_name = input("Enter folder name for saving plots: ")
+        folder_name = f"ft_{NUM_CLASSES}_{NUM_FT_CLASSES}_class_{INSTANCES_PER_CLASS}_instance_{BASE_MODEL}"
+        if RUN_ID is not False:
+            folder_name += f"_{RUN_ID}"
+
         result_dir = '../Results/script_results/'
         save_path = os.path.join(result_dir, folder_name)
         os.makedirs(save_path, exist_ok=True)
