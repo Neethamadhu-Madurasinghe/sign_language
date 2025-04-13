@@ -20,5 +20,20 @@ merged_df = pd.merge(
 # Drop the now-redundant 'gloss2' column
 merged_df.drop(columns=['gloss2'], inplace=True)
 
+file_name = "ssl_to_include_top3_mapping_full.csv"
+
 # Save the final merged result
-merged_df.to_csv("ssl_to_include_top3_mapping_full.csv", index=False)
+merged_df.to_csv(file_name, index=False)
+
+
+# sot sorting 
+import pandas as pd
+
+# Read the merged output file
+df = pd.read_csv(file_name)
+
+# Sort by 'count' column in descending order
+df_sorted = df.sort_values(by='count', ascending=False)
+
+# Save it back to the same file
+df_sorted.to_csv(file_name, index=False)
