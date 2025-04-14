@@ -1,0 +1,63 @@
+Model,Accuracy,F1,Epochs,Base_Model_Class,FT/Direct_Classes,FT/T_Instance_per_class,Model_Type,Overlapping
+240 Class ISL Base Model,0.6079,,,240,,,BASE,No
+200 Class ISL Base Model ,0.6247,,,200,,,BASE,No
+160 Class ISL Base Model,0.6478,,,160,,,BASE,No
+120 Class ISL Base Model,0.6173,,,120,,,BASE,No
+80 Class ISL Base Model,0.6468,,,80,,,BASE,No
+80 Class ISL Base Model (Overlapping class with SSL Dataset),0.6206,,,80,,,BASE,Yes
+240 Class ISL Base Model Finetuned with 64 Class SSL- 6 Instance per Class (5 runs avg),0.7746 (±0.0129),0.7663 (±0.0167),83.8000 (±9.9880),240,64,6,FINETUNED,No
+200 Class ISL Base Model Finetuned with 64 Class SSL- 6 Instance Per Class (5 runs avg),0.7272 (±0.0089),0.7213 (±0.0095),62.0000 (±7.6942),200,64,6,FINETUNED,No
+160 Class ISL Base Model Finetuned with 64 Class SSL- 6 Instance Per Class (5 runs avg),0.7629 (±0.0310),0.7552 (±0.0326),75.4000 (±10.8922),160,64,6,FINETUNED,No
+120 Class ISL Base Model Finetuned with 64 Class SSL- 6 Instance Per Class (5 runs avg),0.7067 (±0.0104),0.6972 (±0.0100),82.2000 (±12.3839),120,64,6,FINETUNED,No
+80 Class ISL Base Model Finetuned with 64 Class SSL- 6 Instance Per Class (5 runs avg),0.7679 (±0.0149),0.7640 (±0.0150),104.6000 (±14.1789),80,64,6,FINETUNED,No
+80 Class ISL Base Model  (Overlapping) Finetuned with 64 Class SSL- 6 Instance Per Class (5 runs avg),0.7286 (±0.0237),0.7201 (±0.0244),100.6000 (±13.5735),80,64,6,FINETUNED,Yes
+240 Class ISL Base Model Finetuned with 64 Class SSL- 4 Instance per Class (5 runs avg),0.6457 (±0.0205),0.6401 (±0.0200),74.0000 (±11.0272),240,64,4,FINETUNED,No
+200 Class ISL Base Model Finetuned with 64 Class SSL- 4 Instance Per Class (5 runs avg),0.6242 (±0.0285),0.6185 (±0.0279),73.2000 (±10.1666),200,64,4,FINETUNED,No
+160 Class ISL Base Model Finetuned with 64 Class SSL- 4 Instance Per Class (5 runs avg),0.6832 (±0.0251),0.6836 (±0.0233),90.6000 (±16.8950),160,64,4,FINETUNED,No
+120 Class ISL Base Model Finetuned with 64 Class SSL- 4 Instance Per Class (5 runs avg),0.6062 (±0.0142),0.6043 (±0.0145),77.2000 (±7.9599),120,64,4,FINETUNED,No
+80 Class ISL Base Model Finetuned with 64 Class SSL- 4 Instance Per Class (5 runs avg),0.6426 (±0.0092),0.6401 (±0.0103),85.4000 (±11.7405),80,64,4,FINETUNED,No
+80 Class ISL Base Model  (Overlapping) Finetuned with 64 Class SSL- 4 Instance Per Class (5 runs avg),0.6527 (±0.0095),0.6464 (±0.0121),97.0000 (±11.6962),80,64,4,FINETUNED,Yes
+240 Class ISL Base Model Finetuned with 64 Class SSL- 3 Instance per Class (5 runs avg),0.5654 (±0.0245),0.5554 (±0.0290),81.2000 (±12.2540),240,64,3,FINETUNED,No
+200 Class ISL Base Model Finetuned with 64 Class SSL- 3 Instance Per Class (5 runs avg),0.5588 (±0.0295),0.5564 (±0.0279),80.0000 (±6.6933),200,64,3,FINETUNED,No
+160 Class ISL Base Model Finetuned with 64 Class SSL- 3 Instance Per Class (5 runs avg),0.5625 (±0.0131),0.5643 (±0.0132),69.4000 (±6.8877),160,64,3,FINETUNED,No
+120 Class ISL Base Model Finetuned with 64 Class SSL- 3 Instance Per Class (5 runs avg),0.5588 (±0.0281),0.5514 (±0.0308),82.6000 (±11.2534),120,64,3,FINETUNED,No
+80 Class ISL Base Model Finetuned with 64 Class SSL- 3 Instance Per Class (5 runs avg),0.5651 (±0.0237),0.5601 (±0.0255),83.6000 (±5.3889),80,64,3,FINETUNED,No
+80 Class ISL Base Model  (Overlapping) Finetuned with 64 Class SSL- 3 Instance Per Class (5 runs avg),0.5687 (±0.0207),0.5660 (±0.0234),100.2000 (±4.5782),80,64,3,FINETUNED,Yes
+240 Class ISL Base Model Finetuned with 64 Class SSL- 2 Instance per Class (5 runs avg),0.4465 (±0.0298),0.4415 (±0.0298),61.6000 (±15.1605),240,64,2,FINETUNED,No
+200 Class ISL Base Model Finetuned with 64 Class SSL- 2 Instance Per Class (5 runs avg),0.4559 (±0.0195),0.4532 (±0.0205),73.8000 (±11.4612),200,64,2,FINETUNED,No
+160 Class ISL Base Model Finetuned with 64 Class SSL- 2 Instance Per Class (5 runs avg),0.4819 (±0.0297),0.4789 (±0.0297),75.4000 (±12.3548),160,64,2,FINETUNED,No
+120 Class ISL Base Model Finetuned with 64 Class SSL- 2 Instance Per Class (5 runs avg),0.4333 (±0.0199),0.4278 (±0.0232),71.8000 (±8.2801),120,64,2,FINETUNED,No
+80 Class ISL Base Model Finetuned with 64 Class SSL- 2 Instance Per Class (5 runs avg),0.4990 (±0.0257),0.4909 (±0.0241),84.0000 (±3.7947),80,64,2,FINETUNED,No
+80 Class ISL Base Model  (Overlapping) Finetuned with 64 Class SSL- 2 Instance Per Class (5 runs avg),0.4719 (±0.0428),0.4606 (±0.0448),102.6000 (±20.5777),80,64,2,FINETUNED,Yes
+240 Class ISL Base Model Finetuned with 48 Class SSL- 6 Instance per Class (5 runs avg),0.7500 (±0.0192),0.7469 (±0.0221),71.4000 (±15.9324),240,48,6,FINETUNED,No
+200 Class ISL Base Model Finetuned with 48 Class SSL- 6 Instance Per Class (5 runs avg),0.7649 (±0.0391),0.7578 (±0.0379),68.6000 (±11.0200),200,48,6,FINETUNED,No
+160 Class ISL Base Model Finetuned with 48 Class SSL- 6 Instance Per Class (5 runs avg),0.7411 (±0.0227),0.7346 (±0.0223),64.4000 (±1.8547),160,48,6,FINETUNED,No
+120 Class ISL Base Model Finetuned with 48 Class SSL- 6 Instance Per Class (5 runs avg),0.7798 (±0.0233),0.7718 (±0.0266),87.8000 (±15.6384),120,48,6,FINETUNED,No
+80 Class ISL Base Model Finetuned with 48 Class SSL- 6 Instance Per Class (5 runs avg),0.7976 (±0.0301),0.7917 (±0.0327),84.2000 (±18.3891),80,48,6,FINETUNED,No
+80 Class ISL Base Model  (Overlapping) Finetuned with 48 Class SSL- 6 Instance Per Class (5 runs avg),0.7423 (±0.0218),0.7342 (±0.0233),97.2000 (±20.2623),80,48,6,FINETUNED,Yes
+240 Class ISL Base Model Finetuned with 48 Class SSL- 4 Instance per Class (5 runs avg),0.7016 (±0.0378),0.6886 (±0.0392),74.2000 (±13.9628),240,48,4,FINETUNED,No
+200 Class ISL Base Model Finetuned with 48 Class SSL- 4 Instance Per Class (5 runs avg),0.7063 (±0.0304),0.6979 (±0.0321),81.2000 (±17.4287),200,48,4,FINETUNED,No
+160 Class ISL Base Model Finetuned with 48 Class SSL- 4 Instance Per Class (5 runs avg),0.6979 (±0.0186),0.6947 (±0.0196),67.2000 (±10.0479),160,48,4,FINETUNED,No
+120 Class ISL Base Model Finetuned with 48 Class SSL- 4 Instance Per Class (5 runs avg),0.6760 (±0.0303),0.6716 (±0.0282),71.2000 (±8.6348),120,48,4,FINETUNED,No
+80 Class ISL Base Model Finetuned with 48 Class SSL- 4 Instance Per Class (5 runs avg),0.6823 (±0.0186),0.6759 (±0.0184),81.4000 (±7.6315),80,48,4,FINETUNED,No
+80 Class ISL Base Model  (Overlapping) Finetuned with 48 Class SSL- 4 Instance Per Class (5 runs avg),0.6875 (±0.0350),0.6817 (±0.0353),91.6000 (±22.4731),80,48,4,FINETUNED,Yes
+240 Class ISL Base Model Finetuned with 48 Class SSL- 3 Instance per Class (5 runs avg),0.6029 (±0.0229),0.5823 (±0.0336),64.0000 (±7.1274),240,48,3,FINETUNED,No
+200 Class ISL Base Model Finetuned with 48 Class SSL- 3 Instance Per Class (5 runs avg),0.5838 (±0.0125),0.5755 (±0.0117),57.2000 (±5.5642),200,48,3,FINETUNED,No
+160 Class ISL Base Model Finetuned with 48 Class SSL- 3 Instance Per Class (5 runs avg),0.5873 (±0.0212),0.5742 (±0.0204),68.4000 (±6.4992),160,48,3,FINETUNED,No
+120 Class ISL Base Model Finetuned with 48 Class SSL- 3 Instance Per Class (5 runs avg),0.5745 (±0.0249),0.5621 (±0.0259),66.2000 (±6.7941),120,48,3,FINETUNED,No
+80 Class ISL Base Model Finetuned with 48 Class SSL- 3 Instance Per Class (5 runs avg),0.6118 (±0.0328),0.6017 (±0.0339),87.0000 (±20.7171),80,48,3,FINETUNED,No
+80 Class ISL Base Model  (Overlapping) Finetuned with 48 Class SSL- 3 Instance Per Class (5 runs avg),0.5706 (±0.0243),0.5547 (±0.0268),89.4000 (±11.8423),80,48,3,FINETUNED,Yes
+240 Class ISL Base Model Finetuned with 48 Class SSL- 2 Instance per Class (5 runs avg),0.4787 (±0.0391),0.4746 (±0.0352),57.4000 (±8.6856),240,48,2,FINETUNED,No
+200 Class ISL Base Model Finetuned with 48 Class SSL- 2 Instance Per Class (5 runs avg),0.4569 (±0.0326),0.4508 (±0.0305),55.2000 (±10.2450),200,48,2,FINETUNED,No
+160 Class ISL Base Model Finetuned with 48 Class SSL- 2 Instance Per Class (5 runs avg),0.4829 (±0.0583),0.4796 (±0.0608),69.6000 (±18.6719),160,48,2,FINETUNED,No
+120 Class ISL Base Model Finetuned with 48 Class SSL- 2 Instance Per Class (5 runs avg),0.4611 (±0.0206),0.4484 (±0.0241),53.4000 (±8.5229),120,48,2,FINETUNED,No
+80 Class ISL Base Model Finetuned with 48 Class SSL- 2 Instance Per Class (5 runs avg),0.5435 (±0.0109),0.5340 (±0.0109),85.6000 (±15.4997),80,48,2,FINETUNED,No
+80 Class ISL Base Model  (Overlapping) Finetuned with 48 Class SSL- 2 Instance Per Class (5 runs avg),0.4657 (±0.0206),0.4531 (±0.0218),78.8000 (±5.6356),80,48,2,FINETUNED,Yes
+64 Class SSL- 6 Instance Per Class (5 runs avg),0.7875 (±0.0218),0.7828 (±0.0240),169.8000 (±17.0106),,64,6,DIRECT,
+64 Class SSL- 4 Instance Per Class (5 runs avg),0.6691 (±0.0294),0.6621 (±0.0292),162.8000 (±9.5373),,64,4,DIRECT,
+64 Class SSL- 3 Instance Per Class (5 runs avg),0.5382 (±0.0293),0.5318 (±0.0298),199.2000 (±22.7807),,64,3,DIRECT,
+64 Class SSL- 2 Instance Per Class (5 runs avg),0.3160 (±0.0494),0.2937 (±0.0511),120.0000 (±17.8885),,64,2,DIRECT,
+48 Class SSL- 6 Instance Per Class (5 runs avg),0.7708 (±0.0275),0.7665 (±0.0277),153.0000 (±14.4637),,48,6,DIRECT,
+48 Class SSL- 4 Instance Per Class (5 runs avg),0.6276 (±0.0476),0.6234 (±0.0488),143.0000 (±23.2637),,48,4,DIRECT,
+48 Class SSL- 3 Instance Per Class (5 runs avg),0.5363 (±0.1143),0.5201 (±0.1234),175.2000 (±45.7795),,48,3,DIRECT,
+48 Class SSL- 2 Instance Per Class (5 runs avg),0.3407 (±0.0857),0.3200 (±0.0914),124.4000 (±52.5798),,48,2,DIRECT,

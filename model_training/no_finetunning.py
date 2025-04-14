@@ -57,7 +57,7 @@ except (TypeError, ValueError):
 
 
 all_data = []
-N_RUNS = 1
+N_RUNS = 5
 TESTING_INSTANCES_START_INDEX = 6
 
 pose_indices = [0, 15, 16, 17, 18, 19, 20]
