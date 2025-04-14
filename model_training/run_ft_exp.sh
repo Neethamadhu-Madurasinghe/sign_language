@@ -8,6 +8,7 @@ base_models=(
   "pretrained_model_weights_120_classes"
   "pretrained_model_weights_80_classes"
   "pretrained_model_weights_80_with_overlapping_classes"
+  "pretrained_model_weights_80_with_movement_overlapping_classes"
 )
 
 # List of instances to test
